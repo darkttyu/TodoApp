@@ -1,0 +1,117 @@
+@model List<TodoApp.Models.TodoItem>
+@{
+    ViewData["Title"] = "To-Do List";
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+}
+
+<div class="container">
+    <h1 class="mb-4">To-Do List</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Add New Task</h5>
+            <form asp-action="Add" method="post">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input name="title" class="form-control" placeholder="Task title" required />
+                    </div>
+                    <div class="col-md-3">
+                        <input name="category" class="form-control" placeholder="Category" required />
+                    </div>
+                    <div class="col-md-3">
+                        <select name="priority" class="form-select">
+                            <option value="Low">Low Priority</option>
+                            <option value="Medium" selected>Medium Priority</option>
+                            <option value="High">High Priority</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Add Task</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Filter Tasks</h5>
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            @foreach (var c in categories)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <select name="priority" class="form-select">
+                            <option value="">All Priorities</option>
+                            <option value="Low">Low Priority</option>
+                            <option value="Medium">Medium Priority</option>
+                            <option value="High">High Priority</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-secondary w-100">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No tasks found. Add a new task to get started!
+        </div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var item in Model)
+            {
+                <div class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 @(item.IsCompleted ? "text-muted text-decoration-line-through" : "")">
+                                @item.Title
+                            </h5>
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="badge bg-secondary">@item.Category</span>
+                                <span class="badge @(item.Priority switch {
+                                    Priority.High => "bg-danger",
+                                    Priority.Medium => "bg-warning",
+                                    _ => "bg-info"
+                                })">@item.Priority Priority</span>
+                                @if (item.IsCompleted)
+                                {
+                                    <span class="badge bg-success">Completed</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            @if (!item.IsCompleted)
+                            {
+                                <a asp-action="MarkAsComplete" asp-route-id="@item.Id" 
+                                   class="btn btn-success btn-sm">
+                                    Mark as Complete
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Hide" asp-route-id="@item.Id" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Hide Task
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
