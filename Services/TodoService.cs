@@ -1,17 +1,20 @@
-using System.Collections.Generic;
-using System.Linq;
 using TodoApp.Models;
+using TodoApp.Data;
 
 namespace TodoApp.Services
 {
 	public class TodoService
 	{
-		private static List<TodoItem> _items = new List<TodoItem>();
-		private static int _nextId = 1;
+		private readonly TodoDbContext _context;
+
+		public TodoService(TodoDbContext context)
+		{
+			_context = context;
+		}
 
 		public List<TodoItem> GetAll(string? category = null, Priority? priority = null)
 		{
-			var query = _items.AsQueryable();
+			var query = _context.TodoItems.AsQueryable();
 			if (!string.IsNullOrEmpty(category))
 				query = query.Where(i => i.Category == category);
 			if (priority.HasValue)
@@ -23,38 +26,40 @@ namespace TodoApp.Services
 
 		public void Add(string title, string category, Priority priority)
 		{
-			_items.Add(new TodoItem
+			_context.TodoItems.Add(new TodoItem
 			{
-				Id = _nextId++,
 				Title = title,
 				Category = category,
 				Priority = priority,
 				IsCompleted = false,
 				IsHidden = false
 			});
+			_context.SaveChanges();
 		}
 
 		public void MarkAsComplete(int id)
 		{
-			var item = _items.FirstOrDefault(i => i.Id == id);
+			var item = _context.TodoItems.FirstOrDefault(i => i.Id == id);
 			if (item != null)
 			{
 				item.IsCompleted = true;
+				_context.SaveChanges();
 			}
 		}
 
 		public void Hide(int id)
 		{
-			var item = _items.FirstOrDefault(i => i.Id == id);
+			var item = _context.TodoItems.FirstOrDefault(i => i.Id == id);
 			if (item != null)
 			{
 				item.IsHidden = true;
+				_context.SaveChanges();
 			}
 		}
 
 		public List<string> GetCategories()
 		{
-			return _items.Select(i => i.Category).Distinct().ToList();
+			return _context.TodoItems.Select(i => i.Category).Distinct().ToList();
 		}
 	}
 }

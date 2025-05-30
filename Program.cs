@@ -1,10 +1,16 @@
 using TodoApp.Services;
+using TodoApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<TodoService>();
+builder.Services.AddScoped<TodoService>();
+builder.Services.AddDbContext<TodoDbContext>(
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
+builder.Services.AddScoped<TodoService>();
 
 var app = builder.Build();
 
